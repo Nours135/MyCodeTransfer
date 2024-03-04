@@ -5,12 +5,12 @@ from datetime import datetime
 '''
 CREATE TABLE `posts`(
 post_id varchar(15),
-created_time varchar(60),  
-data_collection_time varchar(60),
+created_time int,  
+data_collection_time int,
 comment_link varchar(100),
 
 comment_data_json longtext, 
-post_data_json varchar(800),
+post_data_json varchar(4000),
 article_origin_link varchar(100),
 
 PRIMARY KEY (`comment_link`)
@@ -62,24 +62,37 @@ def get_db():
                          port=3306,
                          user='RedditProvider',
                          password='KLWDriver10086',
-                         database='R_Science')  # 记得新建
+                         database='R_Science',
+                         connect_timeout=30)  # 记得新建
     return db
 
 def store_post_full(args_tuple, db, cursor):
+    '''
+        存储所有的data
+        args_tuple 包括 post_data_json, comment_data_json, article_origin_link, data_collection_time, comment_link
+
+    '''
     sql = """
-        
+        UPDATE posts
+        SET post_data_json = %s,
+            comment_data_json = %s,
+            article_origin_link = %s,
+            data_collection_time = %s
+        WHERE comment_link = %s;
     """
     try:
        # 执行sql语句
        cursor.execute(sql, args_tuple)
        # 提交到数据库执行
        db.commit()
+       return 1
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
-            f.write(str(e) + "|" + str(args_tuple[0]) +"\n")
+            f.write(str(e) + "|" + str(args_tuple[-1]) +"\n")
         print(str(e))
         db.rollback()
+        return str(e)
 
 def store_post_half(args_tuple, db, cursor):
     '''存部分post信息，作为爬取队列
@@ -158,21 +171,28 @@ def store_comment(args_tuple, db, cursor):
 
 def get_task(db, cursor):
     '''获取一个task'''
-    sql = """
+    sql = f"""
         SELECT post_id, created_time, data_collection_time, comment_link
-            FROM posts WHERE comment_data_json is NULL LIMIT 1;
-    """
+            FROM posts 
+            WHERE comment_data_json is NULL
+                AND created_time < {int(datetime.today().timestamp()) - 864000}  
+            ORDER by created_time ASC
+            LIMIT 1;
+    """  # 864000 = 10*24*60*60 就是10天前
     try:
         # 执行sql语句
         cursor.execute(sql)
         selected_task = cursor.fetchall()[0]
         # 提交到数据库执行
         post_id, created_time, data_collection_time, comment_link = selected_task
-        occupy_sql = f"""
-                UPDATE comment_data_json = "{int(datetime.today().timestamp())}"
-                    WHERE comment_link = "{comment_link}";
+        occupy_sql = """
+                UPDATE posts
+                SET comment_data_json = %s
+                WHERE comment_link = %s ;
             """
-        cursor.execute(occupy_sql)
+        values = (int(datetime.today().timestamp()),comment_link)
+        
+        cursor.execute(occupy_sql, values)
 
         db.commit()
         return post_id, created_time, data_collection_time, comment_link
@@ -184,5 +204,27 @@ def get_task(db, cursor):
         db.rollback()
         return str(e)
     
+def check_queue(db, cursor):
+    sql = 'select count(*) from posts where comment_data_json is NULL;'
+    try:
+       # 执行sql语句
+       cursor.execute(sql)
+       # 提交到数据库执行
+       selected_task = cursor.fetchall()[0][0]
+        # 提交到数据库执行
+       
+       db.commit()
+       return selected_task  # 返回队列中仍有的任务数量
+    except Exception as e:
+       # 如果发生错误则回滚
+        with open("./error_report.txt", "a") as f:
+            f.write(str(e) + "|" + str(sql) +"\n")
+        # print(str(e))
+        db.rollback()
+        return str(e)
+    
+
 if __name__ == '__main__':
-    pass
+    db = get_db()
+    cursor = db.cursor()
+    print(get_task(db, cursor))

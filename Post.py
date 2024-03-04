@@ -32,7 +32,7 @@ class PostCollector(RedditSpider):
     
     def roll_down(self):
         '''滚轮向下滑动页面'''
-        scroll_distance = randint(300, 500)
+        scroll_distance = randint(600, 900)
         self.driver.execute_script(f"window.scrollBy(0, {scroll_distance});")
         return self
     
@@ -40,11 +40,15 @@ class PostCollector(RedditSpider):
         '''交替执行，向下滚动和抓取数据的操作'''
         # 向下滚动
         #while True:  # 还需要设计一个停止的逻辑
+        self.success, self.total = 0, 0
         for i in range(800):
             self.roll_down()
             time.sleep(randint(3, 8)/9)
-            self.get_page_posts()
+            cur_dict = self.get_page_posts()
+            self.store_posts_data(cur_dict)
+        print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
         return self
+    
 
     def get_posts_container_element(self):
         '''获取，posts的容器的element'''
@@ -66,7 +70,7 @@ class PostCollector(RedditSpider):
         post_container = self.get_posts_container_element()   # 稍微封装一下
         posts_l = post_container.find_elements(By.XPATH, './div') # 下面所有的div
         print(len(posts_l))
-        #cur_dict = dict()
+        cur_dict = dict()
 
         for ele in posts_l:
             try:
@@ -96,15 +100,18 @@ class PostCollector(RedditSpider):
                 continue
             
             self.post_data_dict[cur_url] = (post_id, matches[0])  # 选择第一个作为时间
+            cur_dict[cur_url] = (post_id, matches[0])  # 如果加进去，也把这个加进去
             #print(post_id)
             #print(cur_url)
             #print(matches[0])
-            
-    def store_posts_data(self):
-        '''将之前获取到的所有post都存入数据库'''
-        total, success = 0, 0
 
-        for key, values in tqdm(self.post_data_dict.items(), desc='传输post 数据'):
+        return cur_dict  # 我裂开了，每次都穿，都传
+
+    def store_posts_data(self, cur_dict):
+        '''将之前获取到的所有post都存入数据库'''
+        
+
+        for key, values in tqdm(cur_dict.items(), desc='传输post 数据'):
             comment_url = key
             post_id = values[0]
             create_time = values[1]
@@ -112,28 +119,33 @@ class PostCollector(RedditSpider):
             if 'day' in create_time:
                 delta_values = int(create_time.split(' ')[0])  # 取出差值的数字
                 create_time = current_time - timedelta(days=delta_values)
+            elif 'month' in create_time:
+                delta_values = int(create_time.split(' ')[0])  # 取出差值的数字
+                create_time = current_time - timedelta(days=delta_values * 30)
             elif 'year' in create_time:
                 delta_values = int(create_time.split(' ')[0])  # 取出差值的数字
                 create_time = current_time - timedelta(days=delta_values * 365)
             else:
                 create_time = datetime.today()  # 第一阶段的统计只精确到天
-            create_time = create_time.timestamp()
-            current_time = current_time.timestamp() # 转化为时间戳
+            create_time = int(create_time.timestamp())
+            current_time = int(current_time.timestamp()) # 转化为时间戳
 
             res = store_post_half((post_id, create_time, current_time, comment_url),
                                   db=self.db,
                                   cursor=self.cursor)
             if res == 1:
-                success += 1
-            total += 1
+                self.success += 1
+            self.total += 1
+        print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
         
-        print(f'本次抓取post {total}个，新post{success}个，占比{success/total:.3f}')
+        
 
 
 
 
 
 if __name__ == '__main__':
-    post_url = 'https://www.reddit.com/r/science/'
+    # post_url = 'https://www.reddit.com/r/science/'
+    post_url = 'https://www.reddit.com/r/science/hot/'
     driver = PostCollector(post_url)
-    driver.log_in().get_post_page().data_extraction().store_posts_data()
+    driver.log_in().get_post_page().data_extraction()
