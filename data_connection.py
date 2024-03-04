@@ -1,24 +1,29 @@
 # data connection
 import pymysql
-
+from datetime import datetime
 # DDL
 '''
 CREATE TABLE `posts`(
-post_id varchar(15) NOT NULL,
+post_id varchar(15),
+created_time varchar(60),  
+data_collection_time varchar(60),
+comment_link varchar(100),
+
+comment_data_json longtext, 
+post_data_json varchar(800),
+article_origin_link varchar(100),
+
+PRIMARY KEY (`comment_link`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+# 以下都不要了，浓缩为 post_data_json
 title varchar(100),
 comment_cnt varchar(5),
 tag varchar(15),
-created_time varchar(60),  
 score int,
 author_id varchar(15),
 author_name varchar(30),
-article_origin_link varchar(100),
-data_collection_time varchar(60),
-comment_link varchar(100),
 author_link varchar(100), 
-comment_data_json longtext, 
-PRIMARY KEY (`post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
 
 CREATE TABLE `articles`(
@@ -62,9 +67,7 @@ def get_db():
 
 def store_post_full(args_tuple, db, cursor):
     sql = """
-        INSERT INTO posts (post_id, title, comment_cnt, tag, created_time, score, author_id, author_name,
-               article_origin_link, data_collection_time, comment_link, author_link)
-               values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        
     """
     try:
        # 执行sql语句
@@ -78,9 +81,27 @@ def store_post_full(args_tuple, db, cursor):
         print(str(e))
         db.rollback()
 
-def store_post_half():
-    '''存部分post信息，作为爬取队列'''
-    pass
+def store_post_half(args_tuple, db, cursor):
+    '''存部分post信息，作为爬取队列
+    args_tuple 包括 post_id, created_time, data_collection_time, comment_link
+    key为 comment_link '''
+    sql = """
+        INSERT INTO posts (post_id, created_time, data_collection_time, comment_link)
+               values (%s, %s, %s, %s)
+    """
+    try:
+       # 执行sql语句
+       cursor.execute(sql, args_tuple)
+       # 提交到数据库执行
+       db.commit()
+       return 1
+    except Exception as e:
+       # 如果发生错误则回滚
+        with open("./error_report.txt", "a") as f:
+            f.write(str(e) + "|" + str(args_tuple[0]) +"\n")
+        # print(str(e))
+        db.rollback()
+        return str(e)
     
 def store_article(args_tuple, db, cursor):
     sql = """
@@ -134,3 +155,34 @@ def store_comment(args_tuple, db, cursor):
         print(str(e))
         db.rollback()
 
+
+def get_task(db, cursor):
+    '''获取一个task'''
+    sql = """
+        SELECT post_id, created_time, data_collection_time, comment_link
+            FROM posts WHERE comment_data_json is NULL LIMIT 1;
+    """
+    try:
+        # 执行sql语句
+        cursor.execute(sql)
+        selected_task = cursor.fetchall()[0]
+        # 提交到数据库执行
+        post_id, created_time, data_collection_time, comment_link = selected_task
+        occupy_sql = f"""
+                UPDATE comment_data_json = "{int(datetime.today().timestamp())}"
+                    WHERE comment_link = "{comment_link}";
+            """
+        cursor.execute(occupy_sql)
+
+        db.commit()
+        return post_id, created_time, data_collection_time, comment_link
+    except Exception as e:
+       # 如果发生错误则回滚
+        with open("./error_report.txt", "a") as f:
+            f.write(str(e) + "|" + str(comment_link) +"\n")
+        # print(str(e))
+        db.rollback()
+        return str(e)
+    
+if __name__ == '__main__':
+    pass

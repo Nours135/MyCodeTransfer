@@ -14,12 +14,15 @@ import time
 from random import randint
 from tqdm import tqdm
 from datetime import datetime
+
+from data_connection import get_db
+
 class RedditSpider():
     mail = 'Nournours135'
     pwd = 'KLWDriverbone135'
     log_in_url = 'https://www.reddit.com/login/'
 
-    def __init__(self, ):
+    def __init__(self):
         opt = Options()
          #   opt.add_argument('--headless')
         opt.add_argument("--disable-gpu")
@@ -32,6 +35,9 @@ class RedditSpider():
             'Page.addScriptToEvaluateOnNewDocument',
             {'source': 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'}
         )
+        self.db = get_db()
+        self.cursor = self.db.cursor()
+
 
     def log_in(self):
 
