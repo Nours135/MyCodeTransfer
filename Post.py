@@ -149,7 +149,17 @@ class PostCollector(RedditSpider):
 
 
 if __name__ == '__main__':
+    # 目前所有可以抓取的页面
     # post_url = 'https://www.reddit.com/r/science/'
     post_url = 'https://www.reddit.com/r/science/hot/'
+    post_url = 'https://www.reddit.com/r/science/new/'
+    post_url = 'https://www.reddit.com/r/science/top/'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=day'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=week'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=month'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=year'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=all'
+    # post_url = 'https://www.reddit.com/r/science/rising/'
+
     driver = PostCollector(post_url)
     driver.log_in().get_post_page().data_extraction()
