@@ -152,7 +152,7 @@ class PostCollector(RedditSpider):
                 create_time = current_time - timedelta(days=delta_values * 365)
             else:
                 create_time = datetime.today()  # 第一阶段的统计只精确到天
-            create_time = int(current_time.timestamp()) # 今天
+            create_time = int(create_time.timestamp()) # aaaaa 我乱改代码我忏悔
             current_time = int(current_time.timestamp()) # 转化为时间戳
             
             res = store_post_half((post_id, create_time, current_time, comment_url),
