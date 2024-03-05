@@ -14,7 +14,7 @@ import time
 from random import randint
 from tqdm import tqdm
 from datetime import datetime
-from data_connection import store_post_full, get_task, check_queue
+from data_connection import store_post_full, get_task, check_queue, get_db
 import json
 
 class CommentSpider(RedditSpider):
@@ -33,6 +33,9 @@ class CommentSpider(RedditSpider):
 
     def restore_all_extracted_data(self):
         '''在所有数据抓取后，存储数据'''
+        self.db = get_db()
+        self.cursor = self.db.cursor()  # 应该是timeout了，不是网络的问题
+
         values = (
             json.dumps(self.post_data_json), json.dumps(self.comment_data_l), self.article_origin_link, int(datetime.today().timestamp()), self.comment_url
         )
