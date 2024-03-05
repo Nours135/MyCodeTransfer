@@ -297,8 +297,13 @@ if __name__ == '__main__':
         post_id, created_time, data_collection_time, comment_link = get_task(spider.db, spider.cursor)
         print(f'当前爬取第{curcount}个post：{comment_link}')
         curcount += 1
-        spider(comment_link)
-    
+        try:
+            spider(comment_link)
+        except Exception as e:
+            print(e)
+            with open('error_report.txt', 'a') as fp:
+                fp.write(f'{str(e)} | {comment_link}')
+                
     
     #spider = CommentSpider()
     #spider.log_in()
