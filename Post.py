@@ -18,6 +18,8 @@ from datetime import datetime, timedelta
 
 import re
 from data_connection import store_post_half, get_db
+from utils import MyQueue
+import json
 
 class PostCollector(RedditSpider):
     def __init__(self, post_url):
@@ -41,10 +43,16 @@ class PostCollector(RedditSpider):
         # 向下滚动
         #while True:  # 还需要设计一个停止的逻辑
         self.success, self.total = 0, 0
+        check_hash_queue = MyQueue(12)  # 如果 12 次下拉后，获取的 cur_dict 的hash值一致，则自动停止
         for i in range(800):
             self.roll_down()
             time.sleep(randint(3, 8)/3)
             cur_dict = self.get_page_posts()
+            cur_dic_s = json.dumps(cur_dict)   # 反正这个就是判断的indicator，可以加一个
+            cur_dic_hash = hash(cur_dic_s)
+            if check_hash_queue.check_same(cur_dic_hash):  # 就break就好了，中断爬取
+                break
+            check_hash_queue.append(cur_dic_hash)
             self.store_posts_data(cur_dict)
         print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
         return self
@@ -153,13 +161,14 @@ if __name__ == '__main__':
     # post_url = 'https://www.reddit.com/r/science/'
     post_url = 'https://www.reddit.com/r/science/hot/'
     post_url = 'https://www.reddit.com/r/science/new/'
-    post_url = 'https://www.reddit.com/r/science/top/'
-    # post_url = 'https://www.reddit.com/r/science/top/?t=day'
-    # post_url = 'https://www.reddit.com/r/science/top/?t=week'
+    post_url = 'https://www.reddit.com/r/science/top/'   # 有很多 250 
+    # post_url = 'https://www.reddit.com/r/science/top/?t=day' # 很快就没了
+    # post_url = 'https://www.reddit.com/r/science/top/?t=week'  # 也没多少，好像在top里被包括了
     # post_url = 'https://www.reddit.com/r/science/top/?t=month'
     # post_url = 'https://www.reddit.com/r/science/top/?t=year'
     # post_url = 'https://www.reddit.com/r/science/top/?t=all'
     # post_url = 'https://www.reddit.com/r/science/rising/'
 
+    # 后面有空需要加一下自动检测停止的逻辑了
     driver = PostCollector(post_url)
     driver.log_in().get_post_page().data_extraction()
