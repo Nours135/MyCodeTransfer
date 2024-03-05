@@ -246,7 +246,10 @@ class CommentSpider(RedditSpider):
         # 这个下面包含了四个div，分别是 author和time，title，link，tag
         main_content_ele = post_content_ele.find_element(By.XPATH, './div[2]/div[1]')
         author_time_ele = main_content_ele.find_element(By.XPATH, './div[1]')
-        self.post_data_json['author_name'] = author_time_ele.find_element(By.XPATH, './/a').get_attribute("href")
+        try:
+            self.post_data_json['author_name'] = author_time_ele.find_element(By.XPATH, './/a').get_attribute("href")
+        except Exception:
+            self.post_data_json['author_name'] ='[deleted]'  
         # 可能还有authentic相关信息
         try:
             self.post_data_json['authentic'] = author_time_ele.find_element(By.XPATH, './/div[starts-with(@style, "background-color:")]').text
