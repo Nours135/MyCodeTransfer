@@ -87,8 +87,13 @@ class PostCollector(RedditSpider):
                 # 获取comment URL
                 comment_element = ele_content.find_element(By.XPATH, './div[3]/div[2]')  # 第2个div是获取comment
             except Exception:  # 说明不是，我需要获取的post
-                continue
-            
+                try:
+                    ele_content = ele.find_element(By.XPATH, './/div[@data-testid="post-container"]')
+                    # print([e.text for e in ele_content.find_elements(By.XPATH, './*')])
+                    comment_element = ele_content.find_element(By.XPATH, './div[2]/article/div[1]')  # 如果是 另一个作为搜索的界面，需要这个
+                except Exception:
+                    continue  # 还不行就算了
+
             post_id = ele_content.get_attribute("id")
             link_eles = comment_element.find_elements(By.XPATH, './/a')
             for link_ele in link_eles:
@@ -100,13 +105,20 @@ class PostCollector(RedditSpider):
 
             if cur_url in self.post_data_dict:  # 该post已经被记录了
                 continue
-
-            # 获取时间
-            time_element = ele_content.find_element(By.XPATH, './div[3]/div[1]')  # 第一个div是时间
+            
+            # 获取时间  # 另一个 './div[2]/article/div[1]/div[1]'
+            try:
+                time_element = ele_content.find_element(By.XPATH, './div[3]/div[1]')  # 第一个div是时间
+            except Exception:
+                try:
+                    time_element = ele_content.find_element(By.XPATH, './div[2]/article/div[1]/div[1]')    # 兼容令一个版本代码
+                except Exception:
+                    continue 
             pattern = '\d+\s[a-zA-Z]+\sago'  # 匹配时间的字符的表达式
             matches = re.findall(pattern, time_element.text)
             if len(matches) < 1:
                 continue
+            # print(matches[0])
             
             self.post_data_dict[cur_url] = (post_id, matches[0])  # 选择第一个作为时间
             cur_dict[cur_url] = (post_id, matches[0])  # 如果加进去，也把这个加进去
@@ -170,6 +182,8 @@ if __name__ == '__main__':
     # post_url = 'https://www.reddit.com/r/science/top/?t=all'  # 很多新的
     # post_url = 'https://www.reddit.com/r/science/rising/'
 
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Psychology%22'
+
     post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
         'https://www.reddit.com/r/science/new/',
@@ -180,8 +194,8 @@ if __name__ == '__main__':
     ]
 
     # 后面有空需要加一下自动检测停止的逻辑了
-    #driver = PostCollector()
-    #driver.log_in().get_post_page(post_url).data_extraction()
+    driver = PostCollector()
+    driver.log_in().get_post_page(post_url).data_extraction()
 
     # 新代码逻辑
     driver = PostCollector()
