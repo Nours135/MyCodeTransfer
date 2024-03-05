@@ -23,6 +23,8 @@ class RedditSpider():
             'mail':' Nournours135', 'pwd': 'KLWDriverbone135'
         }, {
             'mail':'mangorice7890', 'pwd': 'qjc12011013@'
+        },{
+            'mail':'No_Efficiency6713', 'pwd': 'yskt2333.'
         }
     ]
     
