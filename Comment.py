@@ -73,16 +73,22 @@ class CommentSpider(RedditSpider):
         return self
 
     def get_comment_low_ele(self):
-        comment_container_xpath_low = '//*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[3]/div[5]/div/div/div'
-        try:
-            WebDriverWait(self.driver, 10, 1).until(
-                          EC.presence_of_element_located((By.XPATH, comment_container_xpath_low))
-                          )
-        except Exception:
-            # 超时，换令一个就好了，这是因为有广告会这样TT
-            comment_container_xpath_low = '//*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[3]/div[6]/div/div/div'
-        res = self.driver.find_element(By.XPATH, comment_container_xpath_low)
-        return res
+        comment_container_xpath_lows = ['//*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[3]/div[5]/div/div/div',
+                                        '//*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[3]/div[6]/div/div/div',
+                                        '//*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[3]/div[4]/div/div/div']
+        for comment_container_xpath_low in comment_container_xpath_lows:
+            try:
+                WebDriverWait(self.driver, 10, 1).until(
+                            EC.presence_of_element_located((By.XPATH, comment_container_xpath_low))
+                            )
+                res = self.driver.find_element(By.XPATH, comment_container_xpath_low)
+                return res
+            except Exception:
+                # 超时，换令一个就好了，这是因为有广告会这样TT
+                pass
+            
+        
+        raise Exception('无法获取comment主界面')
 
     def click_expand(self):
         comment_container_elements = self.get_comment_low_ele() 
@@ -114,7 +120,7 @@ class CommentSpider(RedditSpider):
         comment_container_elements = self.get_comment_low_ele()
         comment_elements = comment_container_elements.find_elements(By.XPATH, "./*")
 
-        # print(len(comment_elements))
+        #print(len(comment_elements))
         self.comment_data_l = []   # 每次运行一个界面会清零
         for ele in tqdm(comment_elements, desc='抓取评论'):
             comment_data_dict = self.extract_info_of_one_comment_element(ele)
