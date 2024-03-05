@@ -19,17 +19,17 @@ from datetime import datetime, timedelta
 import re
 from data_connection import store_post_half, get_db
 from utils import MyQueue
-import json
+import os
 
 class PostCollector(RedditSpider):
-    def __init__(self, post_url):
+    def __init__(self):
         super().__init__()
-        self.post_url = post_url
+        #self.post_url = post_url
         self.post_data_dict = dict()  # 存储post信息的字典
         #self.last_connection = int(datetime.timestamp())        
 
-    def get_post_page(self):
-        self.driver.get(self.post_url)
+    def get_post_page(self, post_url):
+        self.driver.get(post_url)
         return self
     
     def roll_down(self):
@@ -47,15 +47,15 @@ class PostCollector(RedditSpider):
         for i in range(800):
             self.roll_down()
             time.sleep(randint(3, 8)/3)
-            cur_dict = self.get_page_posts()
-            cur_dic_s = json.dumps(cur_dict)   # 反正这个就是判断的indicator，可以加一个
-            cur_dic_hash = hash(cur_dic_s)
-            if check_hash_queue.check_same(cur_dic_hash):  # 就break就好了，中断爬取
+            posts_obj_str, cur_dict = self.get_page_posts()
+            # 反正这个就是判断的indicator，可以加一个
+            if check_hash_queue.check_same(posts_obj_str):  # 就break就好了，中断爬取
                 break
-            check_hash_queue.append(cur_dic_hash)
+            check_hash_queue.append(posts_obj_str)
+
             self.store_posts_data(cur_dict)
         print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
-        return self
+        return self.success/self.total
     
 
     def get_posts_container_element(self):
@@ -77,6 +77,7 @@ class PostCollector(RedditSpider):
         '''抓取所有post信息'''
         post_container = self.get_posts_container_element()   # 稍微封装一下
         posts_l = post_container.find_elements(By.XPATH, './div') # 下面所有的div
+        posts_obj_str = str(posts_l)
         print(len(posts_l))
         cur_dict = dict()
 
@@ -113,7 +114,7 @@ class PostCollector(RedditSpider):
             #print(cur_url)
             #print(matches[0])
 
-        return cur_dict  # 我裂开了，每次都穿，都传
+        return posts_obj_str, cur_dict  # 我裂开了，每次都穿，都传
 
     def store_posts_data(self, cur_dict):
         '''将之前获取到的所有post都存入数据库'''
@@ -164,11 +165,37 @@ if __name__ == '__main__':
     post_url = 'https://www.reddit.com/r/science/top/'   # 有很多 250 
     # post_url = 'https://www.reddit.com/r/science/top/?t=day' # 很快就没了
     # post_url = 'https://www.reddit.com/r/science/top/?t=week'  # 也没多少，好像在top里被包括了
-    # post_url = 'https://www.reddit.com/r/science/top/?t=month'
-    # post_url = 'https://www.reddit.com/r/science/top/?t=year'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=month'  # 还是基本冲复了
+    # post_url = 'https://www.reddit.com/r/science/top/?t=year'  # 这里会有比较多新的
     # post_url = 'https://www.reddit.com/r/science/top/?t=all'
     # post_url = 'https://www.reddit.com/r/science/rising/'
 
+    post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
+        'https://www.reddit.com/r/science/hot/',
+        'https://www.reddit.com/r/science/new/',
+        'https://www.reddit.com/r/science/top/',
+        'https://www.reddit.com/r/science/top/?t=year',
+        'https://www.reddit.com/r/science/top/?t=all',
+        'https://www.reddit.com/r/science/rising/'
+    ]
+
     # 后面有空需要加一下自动检测停止的逻辑了
-    driver = PostCollector(post_url)
-    driver.log_in().get_post_page().data_extraction()
+    driver = PostCollector()
+    driver.log_in().get_post_page(post_url).data_extraction()
+
+    # 新代码逻辑
+    driver = PostCollector()
+    driver.log_in()
+    while True:
+        cur_url = post_urls[randint(0, len(post_urls) - 1)]
+        stats = driver.get_post_page(cur_url).data_extraction()
+
+        # 接下来记录下，这个页面的获取的url的占比
+        stats_f = 'post_page_stats.txt'
+        if os.path.exists(stats_f):
+            fp = open(stats_f, 'w', encoding='utf-8')
+        else:
+            fp = open(stats_f, 'a', encoding='utf-8')
+        fp.write(f'{cur_url} | {round(stats, 2)}')
+        fp.close()
+
