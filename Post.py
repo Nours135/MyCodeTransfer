@@ -24,7 +24,7 @@ class PostCollector(RedditSpider):
         super().__init__()
         self.post_url = post_url
         self.post_data_dict = dict()  # 存储post信息的字典
-        
+        self.last_connection = int(datetime.timestamp())        
 
     def get_post_page(self):
         self.driver.get(self.post_url)
@@ -109,8 +109,12 @@ class PostCollector(RedditSpider):
 
     def store_posts_data(self, cur_dict):
         '''将之前获取到的所有post都存入数据库'''
-        self.db = get_db()
-        self.cursor = self.db.cursor()  # 应该是timeout了，不是网络的问题
+        if len(list(cur_dict.items())) == 0:
+            return
+        if not self.db.ping(reconnect=True):    # 时间比较长再更新connection
+            self.db = get_db()
+            self.cursor = self.db.cursor()  # 应该是timeout了，不是网络的问题
+            
         for key, values in tqdm(cur_dict.items(), desc='传输post 数据'):
             comment_url = key
             post_id = values[0]
