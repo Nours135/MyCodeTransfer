@@ -32,7 +32,7 @@ class PostCollector(RedditSpider):
     
     def roll_down(self):
         '''滚轮向下滑动页面'''
-        scroll_distance = randint(600, 900)
+        scroll_distance = randint(600, 1200)
         self.driver.execute_script(f"window.scrollBy(0, {scroll_distance});")
         return self
     
@@ -43,7 +43,7 @@ class PostCollector(RedditSpider):
         self.success, self.total = 0, 0
         for i in range(800):
             self.roll_down()
-            time.sleep(randint(3, 8)/9)
+            time.sleep(randint(3, 8)/3)
             cur_dict = self.get_page_posts()
             self.store_posts_data(cur_dict)
         print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
