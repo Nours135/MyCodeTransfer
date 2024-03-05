@@ -167,7 +167,7 @@ if __name__ == '__main__':
     # post_url = 'https://www.reddit.com/r/science/top/?t=week'  # 也没多少，好像在top里被包括了
     # post_url = 'https://www.reddit.com/r/science/top/?t=month'  # 还是基本冲复了
     # post_url = 'https://www.reddit.com/r/science/top/?t=year'  # 这里会有比较多新的
-    # post_url = 'https://www.reddit.com/r/science/top/?t=all'
+    # post_url = 'https://www.reddit.com/r/science/top/?t=all'  # 很多新的
     # post_url = 'https://www.reddit.com/r/science/rising/'
 
     post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
@@ -180,8 +180,8 @@ if __name__ == '__main__':
     ]
 
     # 后面有空需要加一下自动检测停止的逻辑了
-    driver = PostCollector()
-    driver.log_in().get_post_page(post_url).data_extraction()
+    #driver = PostCollector()
+    #driver.log_in().get_post_page(post_url).data_extraction()
 
     # 新代码逻辑
     driver = PostCollector()
