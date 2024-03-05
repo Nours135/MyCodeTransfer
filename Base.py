@@ -25,7 +25,10 @@ class RedditSpider():
             'mail':'mangorice7890', 'pwd': 'qjc12011013@'
         },{
             'mail':'No_Efficiency6713', 'pwd': 'yskt2333.'
+        },{
+            'mail':'dismerit_sdasa', 'pwd': 'n.nvFh-gZ3SVR!G'  # qq mail注册的
         }
+        
     ]
     
     log_in_url = 'https://www.reddit.com/login/'
