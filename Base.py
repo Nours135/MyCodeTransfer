@@ -31,7 +31,7 @@ class RedditSpider():
     def __init__(self):
         opt = Options()
          #   opt.add_argument('--headless')
-        opt.add_argument("--disable-gpu")
+        # opt.add_argument("--disable-gpu")
         opt.add_experimental_option('excludeSwitches', ['enable-automation'])
         opt.add_experimental_option('useAutomationExtension', False)   #把webdriver的属性调成false
         opt.add_argument(f'--proxy-server={get_proxy()}')

@@ -24,7 +24,7 @@ class PostCollector(RedditSpider):
         super().__init__()
         self.post_url = post_url
         self.post_data_dict = dict()  # 存储post信息的字典
-        self.last_connection = int(datetime.timestamp())        
+        #self.last_connection = int(datetime.timestamp())        
 
     def get_post_page(self):
         self.driver.get(self.post_url)
