@@ -18,8 +18,14 @@ from datetime import datetime
 from data_connection import get_db
 
 class RedditSpider():
-    mail = 'Nournours135'
-    pwd = 'KLWDriverbone135'
+    reddit_account = [
+        {
+            'mail':' Nournours135', 'pwd': 'KLWDriverbone135'
+        }, {
+            'mail':'mangorice7890', 'pwd': 'qjc12011013@'
+        }
+    ]
+    
     log_in_url = 'https://www.reddit.com/login/'
 
     def __init__(self):
@@ -40,6 +46,9 @@ class RedditSpider():
 
 
     def log_in(self):
+        account_dict = self.reddit_account[randint(0, len(self.reddit_account) - 1)]
+        mail = account_dict['mail']
+        pwd = account_dict['pwd']
 
         self.driver.get(self.log_in_url)
         # 输入账号密码
@@ -52,9 +61,9 @@ class RedditSpider():
         pwd_input_xpath = '//*[@id="loginPassword"]'
         mail_element = self.driver.find_element(By.XPATH, mail_input_xpath)
         pwd_element = self.driver.find_element(By.XPATH, pwd_input_xpath)
-        mail_element.send_keys(self.mail)
+        mail_element.send_keys(mail)
         time.sleep(randint(3, 8)/7)
-        pwd_element.send_keys(self.pwd)
+        pwd_element.send_keys(pwd)
         # 点击登录
         log_in_click_xpath = '/html/body/div/main/div[1]/div/div[2]/form/fieldset[5]/button'
         log_in_click_element = self.driver.find_element(By.XPATH, log_in_click_xpath)

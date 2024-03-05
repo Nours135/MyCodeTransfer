@@ -169,12 +169,57 @@ class CommentSpider(RedditSpider):
         info_dict['data_collect_time'] = int(datetime.today().timestamp())
 
         # 采集content
-        info_dict['comment_text'] = content_ele.text 
+        # info_dict['comment_text'] = content_ele.text 
+        info_dict['comment_text'] = self.read_comment_text(content_ele)
+        #print(info_dict['comment_depth'])
+        #coment = self.read_comment_text(content_ele)
+        #print(info_dict['comment_text'])
 
         # 采集vote
         info_dict['score'] = vote_info_ele.find_element(By.XPATH, './div').text
         
         return info_dict
+
+    def read_comment_text(self, content_ele):
+        ''' 读取element上面的text
+        基础版本的  content_ele.text 不够细决定重新来过~
+        返回的是list of string 后期拼起来就可以了
+        可能会嵌套，但不重要吧，后面都能处理好的'''
+        if content_ele.tag_name == 'div':
+            childs = content_ele.find_elements(By.XPATH, './*')
+            return [self.read_comment_text(child) for child in childs]
+        
+        if content_ele.tag_name == 'p':
+            if len(content_ele.find_elements(By.XPATH, './/a')) > 0:
+                script = """
+                    var p = arguments[0];
+                    var result = [];
+                    for (var i = 0; i < p.childNodes.length; i++) {
+                        var node = p.childNodes[i];
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            // 文本节点
+                            result.push(node.nodeValue);
+                        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'A') {
+                            // <a>元素节点
+                            result.push(node.textContent + ' {(' + node.href + ')}');
+                        }
+                    }
+                    return result.join(' ');
+                    """
+                return [self.driver.execute_script(script, content_ele) + '\n']
+            else:
+                return content_ele.text + '\n'
+
+        
+        #if content_ele.tag_name == 'a':
+        #    return content_ele.text + '{[(' + content_ele.get_attribute("href") + ')]}'
+        
+        if content_ele.tag_name == 'blockquote':
+            childs = content_ele.find_elements(By.XPATH, './*')
+            return ['<blockquote_start>\n'] + [self.read_comment_text(child) for child in childs] + ['<blockquote_end>\n']
+        
+
+
 
 
     # ------------------------ 接下来是post部分的提取代码 ------------------------
@@ -239,10 +284,16 @@ class CommentSpider(RedditSpider):
 if __name__ == '__main__':
     spider = CommentSpider()
     spider.log_in()
+    curcount = 1
     while True:
         #if check_queue(spider.db, spider.cursor)[0] > 10:
         post_id, created_time, data_collection_time, comment_link = get_task(spider.db, spider.cursor)
-        print(f'当前爬取任务：{comment_link}')
+        print(f'当前爬取第{curcount}个post：{comment_link}')
+        curcount += 1
         spider(comment_link)
     
+    
+    #spider = CommentSpider()
+    #spider.log_in()
+    #spider('https://www.reddit.com/r/science/comments/1b6due2/people_who_live_with_social_anxiety_could_be/')
     
