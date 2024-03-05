@@ -63,7 +63,7 @@ def get_db():
                          user='RedditProvider',
                          password='KLWDriver10086',
                          database='R_Science',
-                         connect_timeout=30)  # 记得新建
+                         connect_timeout=60)  # 记得新建
     return db
 
 def store_post_full(args_tuple, db, cursor):
@@ -86,6 +86,8 @@ def store_post_full(args_tuple, db, cursor):
        # 提交到数据库执行
        db.commit()
        return 1
+    except TimeoutError as timoout:
+        return store_post_full(args_tuple, db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
@@ -108,6 +110,8 @@ def store_post_half(args_tuple, db, cursor):
        # 提交到数据库执行
        db.commit()
        return 1
+    except TimeoutError as timoout:
+        store_post_half(args_tuple, db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
@@ -126,13 +130,16 @@ def store_article(args_tuple, db, cursor):
        cursor.execute(sql, args_tuple)
        # 提交到数据库执行
        db.commit()
+    except TimeoutError as timoout:
+        store_article(args_tuple, db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
             f.write(str(e) + "|" + str(args_tuple[0]) +"\n")
         print(str(e))
         db.rollback()
-    
+
+
 def store_user(args_tuple, db, cursor):
     sql = """
         INSERT INTO `users` (uname, Post_Karma, Comment_Karma, cake_day, slogan, is_vip, trophies,
@@ -144,6 +151,8 @@ def store_user(args_tuple, db, cursor):
        cursor.execute(sql, args_tuple)
        # 提交到数据库执行
        db.commit()
+    except TimeoutError as timoout:
+        store_user(args_tuple, db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
@@ -161,6 +170,8 @@ def store_comment(args_tuple, db, cursor):
        cursor.execute(sql, args_tuple)
        # 提交到数据库执行
        db.commit()
+    except TimeoutError as timoout:
+        store_comment(args_tuple, db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
@@ -196,6 +207,9 @@ def get_task(db, cursor):
 
         db.commit()
         return post_id, created_time, data_collection_time, comment_link
+    except TimeoutError as timoout:
+        # 重新传输一遍遍
+        return get_task(db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
@@ -212,9 +226,10 @@ def check_queue(db, cursor):
        # 提交到数据库执行
        selected_task = cursor.fetchall()[0][0]
         # 提交到数据库执行
-       
        db.commit()
        return selected_task  # 返回队列中仍有的任务数量
+    except TimeoutError as timoout:
+        check_queue(db, cursor)
     except Exception as e:
        # 如果发生错误则回滚
         with open("./error_report.txt", "a") as f:
