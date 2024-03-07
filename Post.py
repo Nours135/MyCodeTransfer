@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
     # 新代码逻辑
     driver = PostCollector()
-    driver.log_in()
+    # driver.log_in()
     while True:
         cur_url = post_urls[randint(0, len(post_urls) - 1)]
         stats = driver.get_post_page(cur_url).data_extraction()

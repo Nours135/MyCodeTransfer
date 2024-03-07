@@ -290,7 +290,7 @@ class CommentSpider(RedditSpider):
 
 if __name__ == '__main__':
     spider = CommentSpider()
-    spider.log_in()
+    # spider.log_in()
     curcount = 1
     while True:
         #if check_queue(spider.db, spider.cursor)[0] > 10:
