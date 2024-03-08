@@ -194,8 +194,8 @@ if __name__ == '__main__':
     ]
 
     # 后面有空需要加一下自动检测停止的逻辑了
-    driver = PostCollector()
-    driver.log_in().get_post_page(post_url).data_extraction()
+    # driver = PostCollector()
+    # driver.get_post_page(post_url).data_extraction()
 
     # 新代码逻辑
     driver = PostCollector()

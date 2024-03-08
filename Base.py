@@ -55,9 +55,9 @@ class RedditSpider():
         self.pwd = account_dict['pwd']
         self.driver.get(self.log_in_url)
         try:
-            self.log_in()
-        except Exception:
             self.log_in2()
+        except Exception:
+            self.log_in()
 
 
     def log_in(self):
@@ -100,13 +100,13 @@ class RedditSpider():
         pwd_element.send_keys(self.pwd)
         # 点击登录
 
-        log_in_click_xpath = '//*[@id="login"]/faceplate-tabpanel/auth-flow-modal[1]/div[2]/faceplate-tracker'
+        '''log_in_click_xpath = '//*[@id="login"]/faceplate-tabpanel/auth-flow-modal[1]/div[2]/faceplate-tracker'
         WebDriverWait(self.driver, 10, 1).until(
                           EC.presence_of_element_located((By.LINK_TEXT, log_in_click_xpath))
                           )
         log_in_click_element = self.driver.find_element(By.XPATH, log_in_click_xpath)
         time.sleep(randint(3, 8)/7)
-        ActionChains(self.driver).move_to_element(log_in_click_element).pause(randint(3, 8)/7).click(log_in_click_element).perform()
+        ActionChains(self.driver).move_to_element(log_in_click_element).pause(randint(3, 8)/7).click(log_in_click_element).perform()'''
         time.sleep(randint(6, 8)/2)
         return self
 
