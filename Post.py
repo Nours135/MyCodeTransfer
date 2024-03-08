@@ -183,6 +183,7 @@ if __name__ == '__main__':
     # post_url = 'https://www.reddit.com/r/science/rising/'
 
     post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Psychology%22'
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Social%20Science%22'
 
     post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
@@ -194,11 +195,11 @@ if __name__ == '__main__':
     ]
 
     # 后面有空需要加一下自动检测停止的逻辑了
-    # driver = PostCollector()
-    # driver.get_post_page(post_url).data_extraction()
+    driver = PostCollector()
+    driver.get_post_page(post_url).data_extraction()
 
     # 新代码逻辑
-    driver = PostCollector()
+    # driver = PostCollector()
     # driver.log_in()
     while True:
         cur_url = post_urls[randint(0, len(post_urls) - 1)]
