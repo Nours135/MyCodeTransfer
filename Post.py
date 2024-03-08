@@ -54,8 +54,8 @@ class PostCollector(RedditSpider):
             check_hash_queue.append(posts_obj_str)
 
             self.store_posts_data(cur_dict)
-        print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/self.total:.3f}')
-        return self.success/self.total
+        print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/(self.total + 0.01):.3f}')
+        return self.success/(self.total + 0.01)
     
 
     def get_posts_container_element(self):
