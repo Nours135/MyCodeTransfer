@@ -189,8 +189,8 @@ if __name__ == '__main__':
         'https://www.reddit.com/r/science/hot/',
         'https://www.reddit.com/r/science/new/',
         'https://www.reddit.com/r/science/top/',
-        'https://www.reddit.com/r/science/top/?t=year',
-        'https://www.reddit.com/r/science/top/?t=all',
+        # 'https://www.reddit.com/r/science/top/?t=year',  # 感觉这两个，基本不会更新了
+        # 'https://www.reddit.com/r/science/top/?t=all',
         'https://www.reddit.com/r/science/rising/'
     ]
 
