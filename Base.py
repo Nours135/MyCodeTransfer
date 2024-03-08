@@ -48,6 +48,12 @@ class RedditSpider():
         )
         self.db = get_db()
         self.cursor = self.db.cursor()
+
+        # 将login中，获取网页和邮件密码的东西，都放到前面，没必要重复
+        account_dict = self.reddit_account[randint(0, len(self.reddit_account) - 1)]
+        self.mail = account_dict['mail']
+        self.pwd = account_dict['pwd']
+        self.driver.get(self.log_in_url)
         try:
             self.log_in()
         except Exception:
@@ -55,10 +61,6 @@ class RedditSpider():
 
 
     def log_in(self):
-        account_dict = self.reddit_account[randint(0, len(self.reddit_account) - 1)]
-        mail = account_dict['mail']
-        pwd = account_dict['pwd']
-
         self.driver.get(self.log_in_url)
         # 输入账号密码
         time.sleep(randint(3, 8)/7)
@@ -70,9 +72,9 @@ class RedditSpider():
         pwd_input_xpath = '//*[@id="loginPassword"]'
         mail_element = self.driver.find_element(By.XPATH, mail_input_xpath)
         pwd_element = self.driver.find_element(By.XPATH, pwd_input_xpath)
-        mail_element.send_keys(mail)
+        mail_element.send_keys(self.mail)
         time.sleep(randint(3, 8)/7)
-        pwd_element.send_keys(pwd)
+        pwd_element.send_keys(self.pwd)
         # 点击登录
         log_in_click_xpath = '/html/body/div/main/div[1]/div/div[2]/form/fieldset[5]/button'
         log_in_click_element = self.driver.find_element(By.XPATH, log_in_click_xpath)
@@ -82,11 +84,7 @@ class RedditSpider():
         return self
     
     def log_in2(self):
-        account_dict = self.reddit_account[randint(0, len(self.reddit_account) - 1)]
-        mail = account_dict['mail']
-        pwd = account_dict['pwd']
 
-        self.driver.get(self.log_in_url)
         # 输入账号密码
         time.sleep(randint(3, 8)/7)
         log_in_forum_xpath = '//*[@id="login-username"]'
@@ -97,13 +95,21 @@ class RedditSpider():
         pwd_input_xpath = '//*[@id="login-password"]'
         mail_element = self.driver.find_element(By.XPATH, mail_input_xpath)
         pwd_element = self.driver.find_element(By.XPATH, pwd_input_xpath)
-        mail_element.send_keys(mail)
+        mail_element.send_keys(self.mail)
         time.sleep(randint(3, 8)/7)
-        pwd_element.send_keys(pwd)
+        pwd_element.send_keys(self.pwd)
         # 点击登录
-        log_in_click_xpath = '//*[@id="login"]/faceplate-tabpanel/auth-flow-modal[1]/div[2]/faceplate-tracker/button'
+
+        log_in_click_xpath = '//*[@id="login"]/faceplate-tabpanel/auth-flow-modal[1]/div[2]/faceplate-tracker'
+        WebDriverWait(self.driver, 10, 1).until(
+                          EC.presence_of_element_located((By.LINK_TEXT, log_in_click_xpath))
+                          )
         log_in_click_element = self.driver.find_element(By.XPATH, log_in_click_xpath)
         time.sleep(randint(3, 8)/7)
         ActionChains(self.driver).move_to_element(log_in_click_element).pause(randint(3, 8)/7).click(log_in_click_element).perform()
         time.sleep(randint(6, 8)/2)
         return self
+
+
+if __name__ == '__main__':
+    t = RedditSpider()
