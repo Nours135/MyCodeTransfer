@@ -66,11 +66,11 @@ class CommentSpider(RedditSpider):
             except Exception as e:
                 # print(e)
                 pass
-            time.sleep(randint(6, 8)/10)
+            time.sleep(randint(6, 8)/20)
         return self
             
     def click_more_reply_recursively(self):
-        time.sleep(randint(3, 8)/5)
+        time.sleep(randint(7, 8)/3)
         res = self.click_more_reply()
         while res is not None:
             res = self.click_more_reply()
