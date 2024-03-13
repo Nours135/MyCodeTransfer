@@ -72,8 +72,12 @@ class CommentSpider(RedditSpider):
     def click_more_reply_recursively(self):
         time.sleep(randint(7, 8)/3)
         res = self.click_more_reply()
+        c = 0
         while res is not None:
+            c += 1
             res = self.click_more_reply()
+            if c > 50:
+                break
         return self
 
     def get_comment_low_ele(self):
