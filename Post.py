@@ -184,6 +184,10 @@ if __name__ == '__main__':
 
     post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Psychology%22'
     post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Social%20Science%22'
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Health%22'  
+    post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Environment%22'
+    
+    # post_url = 'https://www.reddit.com/r/science/rising/'
 
     post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',

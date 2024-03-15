@@ -76,7 +76,7 @@ class CommentSpider(RedditSpider):
         while res is not None:
             c += 1
             res = self.click_more_reply()
-            if c > 50:
+            if c > 60:
                 break
         return self
 
