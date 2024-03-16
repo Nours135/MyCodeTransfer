@@ -186,8 +186,9 @@ if __name__ == '__main__':
     post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Social%20Science%22'
     post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Health%22'  
     post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Environment%22'
-    
-    # post_url = 'https://www.reddit.com/r/science/rising/'
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Medicine%22'  
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Biology%22'
+    post_url = 'https://www.reddit.com/r/science/rising/'
 
     post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
@@ -195,6 +196,7 @@ if __name__ == '__main__':
         'https://www.reddit.com/r/science/top/',
         # 'https://www.reddit.com/r/science/top/?t=year',  # 感觉这两个，基本不会更新了
         # 'https://www.reddit.com/r/science/top/?t=all',
+        'https://www.reddit.com/r/science/top/?t=week',
         'https://www.reddit.com/r/science/rising/'
     ]
 
