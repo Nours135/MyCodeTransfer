@@ -181,22 +181,26 @@ if __name__ == '__main__':
     # post_url = 'https://www.reddit.com/r/science/top/?t=year'  # 这里会有比较多新的
     # post_url = 'https://www.reddit.com/r/science/top/?t=all'  # 很多新的
     # post_url = 'https://www.reddit.com/r/science/rising/'
+    post_urls = [
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Psychology%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Social%20Science%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Health%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Environment%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Medicine%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Biology%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Neuroscience%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Economics%22']
+    
+    post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Epidemiology%22' # 正在跑的这次就是！
+    # post_url = 'https://www.reddit.com/r/science/rising/'
 
-    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Psychology%22'
-    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Social%20Science%22'
-    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Health%22'  
-    post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Environment%22'
-    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Medicine%22'  
-    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Biology%22'
-    post_url = 'https://www.reddit.com/r/science/rising/'
-
-    post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
+    post_urls += [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
         'https://www.reddit.com/r/science/new/',
         'https://www.reddit.com/r/science/top/',
         # 'https://www.reddit.com/r/science/top/?t=year',  # 感觉这两个，基本不会更新了
         # 'https://www.reddit.com/r/science/top/?t=all',
-        'https://www.reddit.com/r/science/top/?t=week',
+        #'https://www.reddit.com/r/science/top/?t=week',
         'https://www.reddit.com/r/science/rising/'
     ]
 
@@ -208,15 +212,18 @@ if __name__ == '__main__':
     # driver = PostCollector()
     # driver.log_in()
     while True:
-        cur_url = post_urls[randint(0, len(post_urls) - 1)]
-        stats = driver.get_post_page(cur_url).data_extraction()
+        try:
+            cur_url = post_urls[randint(0, len(post_urls) - 1)]
+            stats = driver.get_post_page(cur_url).data_extraction()
 
-        # 接下来记录下，这个页面的获取的url的占比
-        stats_f = 'post_page_stats.txt'
-        if os.path.exists(stats_f):
-            fp = open(stats_f, 'w', encoding='utf-8')
-        else:
-            fp = open(stats_f, 'a', encoding='utf-8')
-        fp.write(f'{cur_url} | {round(stats, 2)}')
-        fp.close()
+            # 接下来记录下，这个页面的获取的url的占比
+            stats_f = 'post_page_stats.txt'
+            if os.path.exists(stats_f):
+                fp = open(stats_f, 'w', encoding='utf-8')
+            else:
+                fp = open(stats_f, 'a', encoding='utf-8')
+            fp.write(f'{cur_url} | {round(stats, 2)}')
+            fp.close()
+        except Exception as err:
+            print(err)
 
