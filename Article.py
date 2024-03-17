@@ -1,10 +1,10 @@
 import datetime
 
-import tenacity
+# import tenacity
 from selenium.webdriver.chrome.options import Options
 import requests
 from lxml import etree
-from selenium import webdriver
+# from selenium import webdriver
 import time
 import re
 from selenium.webdriver import Chrome
@@ -149,7 +149,7 @@ def main():
         if datetime.datetime.now().timestamp() - connect_time > 600:  # 重新连接一下吧
             db = get_db()
             cursor = db.cursor()
-            connect_time = datetime.now().timestamp()
+            connect_time = datetime.datetime.now().timestamp()
         article_origin_link = get_article_task(db, cursor)
         data = get_one_article(article_origin_link)
         status = store_article(article_origin_link, json.dumps(data), db, cursor)
@@ -174,7 +174,7 @@ def test():
     #     article_origin_link = ' https://news.flinders.edu.au/blog/2023/12/15/why-the-long-face-now-we-know/'
     #     article_origin_link = 'https://www.yorku.ca/news/2023/12/14/thinking-about-god-inspires-risk-taking-for-believers-york-university-study-finds/'
     article_origin_link = 'https://www.port.ac.uk/news-events-and-blogs/news/facial-symmetry-doesnt-explain-beer-goggles'
-    article_origin_link = 'https://psycnet.apa.org/doiLanding?doi=10.1037%2Flhb0000541'
+    article_origin_link = r'https://psycnet.apa.org/doiLanding?doi=10.1037%2Flhb0000541'
     article_origin_link = 'https://www.usnews.com/news/health-news/articles/2023-12-14/more-research-shows-the-brain-benefits-of-exercise'
      # article_origin_link = 'https://ojs.aaai.org/index.php/AAAI/article/view/26009/25781'
     #data = get_one_article(article_origin_link)
