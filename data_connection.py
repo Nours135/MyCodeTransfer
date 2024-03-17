@@ -70,7 +70,6 @@ def store_post_full(args_tuple, db, cursor):
     '''
         存储所有的data
         args_tuple 包括 post_data_json, comment_data_json, article_origin_link, data_collection_time, comment_link
-
     '''
     sql = """
         UPDATE posts
@@ -120,25 +119,6 @@ def store_post_half(args_tuple, db, cursor):
         db.rollback()
         return str(e)
     
-def store_article(args_tuple, db, cursor):
-    sql = """
-        INSERT INTO articles (title, content, tables, article_origin_link, data_collection_time)
-               values (%s, %s, %s, %s, %s)
-    """
-    try:
-       # 执行sql语句
-       cursor.execute(sql, args_tuple)
-       # 提交到数据库执行
-       db.commit()
-    except TimeoutError as timoout:
-        store_article(args_tuple, db, cursor)
-    except Exception as e:
-       # 如果发生错误则回滚
-        with open("./error_report.txt", "a") as f:
-            f.write(str(e) + "|" + str(args_tuple[0]) +"\n")
-        print(str(e))
-        db.rollback()
-
 
 def store_user(args_tuple, db, cursor):
     sql = """
@@ -160,25 +140,6 @@ def store_user(args_tuple, db, cursor):
         print(str(e))
         db.rollback()
     
-def store_comment(args_tuple, db, cursor):
-    sql = """
-        INSERT INTO `users` ()
-               values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    try:
-       # 执行sql语句
-       cursor.execute(sql, args_tuple)
-       # 提交到数据库执行
-       db.commit()
-    except TimeoutError as timoout:
-        store_comment(args_tuple, db, cursor)
-    except Exception as e:
-       # 如果发生错误则回滚
-        with open("./error_report.txt", "a") as f:
-            f.write(str(e) + "|" + str(args_tuple[0]) +"\n")
-        print(str(e))
-        db.rollback()
-
 
 def get_task(db, cursor):
     '''获取一个task'''
@@ -218,6 +179,71 @@ def get_task(db, cursor):
         db.rollback()
         return str(e)
     
+def store_article(article_origin_link, article_data_json, db, cursor):
+    '''存储post的article的信息
+    args_tuple 包括 article_data_json, article_origin_link
+     '''
+    sql = """
+        UPDATE posts
+        SET article_data_json = %s
+        WHERE article_origin_link = %s;
+    """
+    try:
+       # 执行sql语句
+       cursor.execute(sql, (article_data_json, article_origin_link))
+       # 提交到数据库执行
+       db.commit()
+       return 1
+    except TimeoutError as timoout:
+        store_post_half(article_origin_link, article_data_json, db, cursor)
+    except Exception as e:
+       # 如果发生错误则回滚
+        with open("./error_report.txt", "a") as f:
+            f.write(str(e) + "|" + str(article_origin_link) +"\n")
+        # print(str(e))
+        db.rollback()
+        return str(e)
+
+def get_article_task(db, cursor):
+    '''获取一个article 的 task'''
+    sql = f"""
+        SELECT article_origin_link
+            FROM posts 
+            WHERE post_data_json is NOT NULL
+                AND article_data_json is NULL
+            ORDER by RAND()  
+            LIMIT 1;
+    """  # ORDER by RAND()  实现随机获取
+    try:
+        # 执行sql语句
+        cursor.execute(sql)
+        selected_task = cursor.fetchall()[0]
+        # 提交到数据库执行
+        article_origin_link = selected_task[0] # 无需下面的occupy，这个一般单线程即可，而且随机获取本身也较低概率重复
+        # occupy_sql = """
+        #        UPDATE posts
+        #        SET comment_data_json = %s
+        #        WHERE comment_link = %s ;
+        #    """
+        # values = (int(datetime.today().timestamp()),comment_link)
+        
+        # cursor.execute(occupy_sql, values)
+
+        db.commit()
+        return article_origin_link
+    
+    except TimeoutError as timoout:
+        # 重新传输一遍遍
+        return get_task(db, cursor)
+    except Exception as e:
+       # 如果发生错误则回滚
+        with open("./error_report.txt", "a") as f:
+            f.write(str(e) + "|" + str(article_origin_link) +"\n")
+        # print(str(e))
+        db.rollback()
+        return str(e)
+    
+
 def check_queue(db, cursor):
     sql = 'select count(*) from posts where comment_data_json is NULL;'
     try:

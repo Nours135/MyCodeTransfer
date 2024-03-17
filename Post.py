@@ -78,7 +78,7 @@ class PostCollector(RedditSpider):
         post_container = self.get_posts_container_element()   # 稍微封装一下
         posts_l = post_container.find_elements(By.XPATH, './div') # 下面所有的div
         posts_obj_str = str(posts_l)
-        print(len(posts_l))
+        # print(len(posts_l))
         cur_dict = dict()
 
         for ele in posts_l:
@@ -189,11 +189,16 @@ if __name__ == '__main__':
     'https://www.reddit.com/r/science/?f=flair_name%3A%22Medicine%22',
     'https://www.reddit.com/r/science/?f=flair_name%3A%22Biology%22',
     'https://www.reddit.com/r/science/?f=flair_name%3A%22Neuroscience%22',
-    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Economics%22']
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Economics%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Epidemiology%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Cancer%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Animal%20Science%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Chemistry%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Engineering%22']
     
-    post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Epidemiology%22' # 正在跑的这次就是！
+    post_url = 'https://www.reddit.com/r/science/?f=flair_name%3A%22Anthropology%22'
     # post_url = 'https://www.reddit.com/r/science/rising/'
-
+    
     post_urls += [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
         'https://www.reddit.com/r/science/new/',
@@ -203,6 +208,8 @@ if __name__ == '__main__':
         #'https://www.reddit.com/r/science/top/?t=week',
         'https://www.reddit.com/r/science/rising/'
     ]
+
+    total_page = 1
 
     # 后面有空需要加一下自动检测停止的逻辑了
     driver = PostCollector()
@@ -226,4 +233,7 @@ if __name__ == '__main__':
             fp.close()
         except Exception as err:
             print(err)
-
+        finally:
+            time.sleep(randint(60, 100))
+            total_page += 1
+            print(f'本次post线程已经爬取了{total_page}个页面')
