@@ -37,7 +37,7 @@ def get_article_page_content(article_origin_link):
             {'source': 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'}
         )
         driver.get(article_origin_link)
-        time.sleep(7)
+        time.sleep(12)
         html = driver.page_source.encode(encoding='utf-8')
         time.sleep(5)
         driver.close()
@@ -64,7 +64,7 @@ def get_article_page_content(article_origin_link):
         )
         driver.get(article_origin_link)
         html = driver.page_source.encode(encoding='utf-8')
-        time.sleep(7)
+        time.sleep(12)
         driver.close()
         return html
 
