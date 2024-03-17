@@ -133,7 +133,7 @@ def get_one_article(article_origin_link):
     except Exception as e:
         print(e)
         return {'title': "request return nothing !!! please check:  " + article_origin_link, 'content': "null",'tables': "null", 
-                'images': imgs,'article_origin_link': article_origin_link, 'data_collection_time': data_collection_time}
+                'images': 'null' ,'article_origin_link': article_origin_link, 'data_collection_time': data_collection_time}
 
     article = {'title': title, 'content': content,'tables': tables, 'images': imgs, 'article_origin_link': article_origin_link,
                 'data_collection_time': data_collection_time}
