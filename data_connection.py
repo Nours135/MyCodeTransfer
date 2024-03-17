@@ -220,15 +220,6 @@ def get_article_task(db, cursor):
         selected_task = cursor.fetchall()[0]
         # 提交到数据库执行
         article_origin_link = selected_task[0] # 无需下面的occupy，这个一般单线程即可，而且随机获取本身也较低概率重复
-        # occupy_sql = """
-        #        UPDATE posts
-        #        SET comment_data_json = %s
-        #        WHERE comment_link = %s ;
-        #    """
-        # values = (int(datetime.today().timestamp()),comment_link)
-        
-        # cursor.execute(occupy_sql, values)
-
         db.commit()
         return article_origin_link
     
