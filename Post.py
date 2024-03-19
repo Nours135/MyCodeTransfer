@@ -196,10 +196,19 @@ if __name__ == '__main__':
     'https://www.reddit.com/r/science/?f=flair_name%3A%22Chemistry%22',
     r'https://www.reddit.com/r/science/?f=flair_name%3A%22Engineering%22',
     'https://www.reddit.com/r/science/?f=flair_name%3A%22Anthropology%22',
-    'https://www.reddit.com/r/science/?f=flair_name%3A%22Physics%22']
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Physics%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Earth%20Science%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Paleontology%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Astronomy%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Computer%20Science%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Geology%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Materials%20Science%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Mathematics%22',
+    'https://www.reddit.com/r/science/?f=flair_name%3A%22Nanoscience%22',
+    r'https://www.reddit.com/r/science/?f=flair_name%3A%22Genetics%22']
     
-    post_url = r'https://www.reddit.com/r/science/?f=flair_name%3A%22Earth%20Science%22'
-    # post_url = 'https://www.reddit.com/r/science/rising/'
+    #post_url = r
+    post_url = 'https://www.reddit.com/r/science/rising/'
     
     post_urls += [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
