@@ -28,7 +28,11 @@ class CommentSpider(RedditSpider):
         self.comment_url = comment_url
         # self.comment_full_url = self.mother_url + comment_url
         self.get_comment_page().extract_post_data()  # 获取post信息
-        self.click_more_reply_recursively().click_expand().extract_all_comments()  # 获取comment信息
+        try:
+            self.click_more_reply_recursively().click_expand().extract_all_comments()  # 获取comment信息
+        except Exception as e:
+            '''基本能确定这里报错是因为没有评论'''
+            self.comment_data_l = {'error': str(e)}
         self.restore_all_extracted_data()
 
     def restore_all_extracted_data(self):
@@ -135,9 +139,6 @@ class CommentSpider(RedditSpider):
             if comment_data_dict is not None: self.comment_data_l.append(comment_data_dict)
         
         # 接下来就做处理，生成reply comment的信息了
-
-    def parse_data_info_dict_l(self, comment_data_l):
-        comment_stack = []  # 评论栈，用来，这个后面再说吧，后面再parse
 
     def extract_info_of_one_comment_element(self, com_ele):
         '''从一个评论的element内获取信息的函数
@@ -292,7 +293,7 @@ class CommentSpider(RedditSpider):
         return self
 
 
-if __name__ == '__main__':
+def main():
     spider = CommentSpider()
     # spider.log_in()
     curcount = 1
@@ -308,8 +309,10 @@ if __name__ == '__main__':
             with open('error_report.txt', 'a') as fp:
                 fp.write(f'{str(e)} | {comment_link}')
                 
-    
-    #spider = CommentSpider()
-    #spider.log_in()
-    #spider('https://www.reddit.com/r/science/comments/1b6due2/people_who_live_with_social_anxiety_could_be/')
-    
+def test():
+    spider = CommentSpider()
+    spider.log_in()
+    spider('')
+
+if __name__ == '__main__':
+    test()
