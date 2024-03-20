@@ -47,16 +47,75 @@ class PostCollector(RedditSpider):
         for i in range(800):
             self.roll_down()
             time.sleep(randint(3, 8)/3)
-            posts_obj_str, cur_dict = self.get_page_posts()
+            try:
+                posts_obj_str, cur_dict = self.get_page_posts1()  # 结束测试阶段记得改回来
+            except Exception as e:
+                print(f'出现报错信息{e}，遇到新的界面结构，使用新的post爬取逻辑')
+                posts_obj_str, cur_dict = self.get_page_posts2()  # 执行一个新的函数，适应新的post 结构
+                
             # 反正这个就是判断的indicator，可以加一个
             if check_hash_queue.check_same(posts_obj_str):  # 就break就好了，中断爬取
                 break
             check_hash_queue.append(posts_obj_str)
-
+            # print('测试阶段，没有传输数据')
             self.store_posts_data(cur_dict)
         print(f'本次抓取post {self.total}个，新post{self.success}个，占比{self.success/(self.total + 0.01):.3f}')
         return self.success/(self.total + 0.01)
     
+    def get_page_posts2(self):
+        '''适应新的post的结构的东西'''
+        posts_l = self.driver.find_elements(By.XPATH, './/article') # 下面所有的 article
+        posts_obj_str = str(posts_l)
+        #print(len(posts_l))
+        #print(posts_obj_str)
+        cur_dict = dict()
+
+        for ele in posts_l:
+            try:
+                ele_content = ele.find_element(By.XPATH, './shreddit-post')
+                
+            except Exception as e:  # 说明不是，我需要获取的post
+                print(e)
+
+            post_id = ele_content.get_attribute("id")
+            link_ele = ele_content.find_element(By.XPATH, './a')
+            cur_url = link_ele.get_attribute("href")
+            if 'r/science/comments' not in cur_url:
+                print('第二种方法获取到错误的comment url', cur_url)
+                continue  # 循环正常退出，没有匹配到网页
+
+            if cur_url in self.post_data_dict:  # 该post已经被记录了
+                continue
+            
+            # 获取时间  # 另一个 './div[2]/article/div[1]/div[1]'
+            try:
+                # ./span/span[1]/faceplate-timeago
+                time_element = ele_content.find_element(By.XPATH, './/faceplate-timeago')  # 第一个span是时间
+            except Exception:
+                print('时间element获取出错')
+            #pattern = '\d+\s[a-zA-Z]+\sago'  # 匹配时间的字符的表达式
+            #matches = re.findall(pattern, time_element.text)
+            #if len(matches) < 1:
+            #   continue
+            # print(matches[0])
+            # time_post = time_element.get_attribute("ts")
+            attrs = self.driver.execute_script('var items = {}; for (index = 0; index < arguments[0].attributes.length; ++index) { items[arguments[0].attributes[index].name] = arguments[0].attributes[index].value }; return items;', time_element)
+            time_post = attrs['ts']
+            try:
+                time_obj = datetime.strptime(time_post, "%Y-%m-%dT%H:%M:%S.%f%z")
+                # 将 datetime 对象转换为 timestamp
+                time_post_timestamp = int(time_obj.timestamp())
+            except Exception:
+                print(time_post)
+                time_post_timestamp = int(datetime.now().timestamp())
+            
+            self.post_data_dict[cur_url] = (post_id, time_post_timestamp)  # 选择第一个作为时间
+            cur_dict[cur_url] = (post_id, time_post_timestamp)  # 如果加进去，也把这个加进去
+            #print(post_id)
+            #print(cur_url)
+            #print(matches[0])
+            print((cur_url, post_id, time_post_timestamp))
+        return posts_obj_str, cur_dict  # 我裂开了，每次都穿，都传
 
     def get_posts_container_element(self):
         '''获取，posts的容器的element'''
@@ -73,8 +132,8 @@ class PostCollector(RedditSpider):
         return res
     
 
-    def get_page_posts(self):
-        '''抓取所有post信息'''
+    def get_page_posts1(self):
+        '''抓取所有post信息，对旧版本的界面生效'''
         post_container = self.get_posts_container_element()   # 稍微封装一下
         posts_l = post_container.find_elements(By.XPATH, './div') # 下面所有的div
         posts_obj_str = str(posts_l)
@@ -91,7 +150,7 @@ class PostCollector(RedditSpider):
                     ele_content = ele.find_element(By.XPATH, './/div[@data-testid="post-container"]')
                     # print([e.text for e in ele_content.find_elements(By.XPATH, './*')])
                     comment_element = ele_content.find_element(By.XPATH, './div[2]/article/div[1]')  # 如果是 另一个作为搜索的界面，需要这个
-                except Exception:
+                except Exception as e:
                     continue  # 还不行就算了
 
             post_id = ele_content.get_attribute("id")
@@ -165,11 +224,12 @@ class PostCollector(RedditSpider):
         
         
 
+def test():
+    post_url = 'https://www.reddit.com/r/science/rising/'
+    driver = PostCollector()
+    driver.get_post_page(post_url).data_extraction()
 
-
-
-
-if __name__ == '__main__':
+def main():
     # 目前所有可以抓取的页面
     # post_url = 'https://www.reddit.com/r/science/'
     post_url = 'https://www.reddit.com/r/science/hot/'
@@ -210,7 +270,7 @@ if __name__ == '__main__':
     #post_url = r
     post_url = 'https://www.reddit.com/r/science/rising/'
     
-    post_urls += [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
+    post_urls = [  # 后面把这部分的逻辑改为，随机选择url，然后循环爬取
         'https://www.reddit.com/r/science/hot/',
         'https://www.reddit.com/r/science/new/',
         'https://www.reddit.com/r/science/top/',
@@ -248,3 +308,7 @@ if __name__ == '__main__':
             time.sleep(randint(60, 100))
             total_page += 1
             print(f'本次post线程已经爬取了{total_page}个页面')
+
+
+if __name__ == '__main__':
+    main()
